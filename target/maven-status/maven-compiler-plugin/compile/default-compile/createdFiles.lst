@@ -1,0 +1,3 @@
+com\test\siddhu\SpringBatchExample\Domain.class
+com\test\siddhu\SpringBatchExample\tasklet\FileDeletingTasklet.class
+com\test\siddhu\SpringBatchExample\App.class

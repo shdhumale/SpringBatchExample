@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:batch="http://www.springframework.org/schema/batch" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/batch 
+		http://www.springframework.org/schema/batch/spring-batch-2.2.xsd
+		http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		">
+
+	<import resource="../config/context.xml" />
+
+	<bean id="siddhu" class="com.test.siddhu.SpringBatchExample.FileReader" />
+
+	<bean id="fileDeletingTasklet" class="com.test.siddhu.SpringBatchExample.tasklet.FileDeletingTasklet" >
+		<property name="directory" value="file:csv/inputs/" />
+	</bean>
+	
+	<job id="readMultipleFileJob" xmlns="http://www.springframework.org/schema/batch">
+		<step id="step1" next="deleteFileDirectory">
+			<tasklet>
+				<chunk reader="multipleFileResourceReader" writer="fileItemWriter"
+					commit-interval="1" />
+			</tasklet>
+		</step>
+		<step id="deleteFileDirectory">
+		    <tasklet ref="fileDeletingTasklet" />
+		</step>
+	</job>
+
+	<bean id="multipleFileResourceReader"
+		class=" org.springframework.batch.item.file.MultiResourceItemReader">
+		<property name="resources" value="file:csv/inputs/siddhu-*.csv" />
+		<property name="delegate" ref="flatFileItemReader" />
+	</bean>
+
+	<bean id="flatFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader">
+
+		<property name="lineMapper">
+			<bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+
+				<property name="lineTokenizer">
+					<bean
+						class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+						<property name="names" value="id, siddhu" />
+					</bean>
+				</property>
+				<property name="fieldSetMapper">
+					<bean
+						class="org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper">
+						<property name="prototypeBeanName" value="siddhu" />
+					</bean>
+				</property>
+			</bean>
+		</property>
+
+	</bean>
+
+	<bean id="fileItemWriter" class="org.springframework.batch.item.file.FlatFileItemWriter">
+
+		<property name="resource" value="file:csv/outputs/test-siddhu.all.csv" />
+		<property name="appendAllowed" value="false" />
+		<property name="lineAggregator">
+			<bean
+				class="org.springframework.batch.item.file.transform.DelimitedLineAggregator">
+				<property name="delimiter" value="," />
+				<property name="fieldExtractor">
+					<bean
+						class="org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor">
+						<property name="names" value="id, siddhu" />
+					</bean>
+				</property>
+			</bean>
+		</property>
+
+	</bean>
+
+</beans>
